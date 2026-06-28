@@ -354,7 +354,6 @@
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
 <div id="loginPage" class="auth-bg">
   <div class="auth-card">
     <div class="auth-logo">
@@ -399,7 +398,6 @@
   </div>
 </div>
 
-<!-- REGISTER PAGE -->
 <div id="registerPage" class="auth-bg" style="display:none;">
   <div class="auth-card" style="max-width:500px;">
     <div class="auth-logo"><div class="gs-wordmark">Gusto<span>Stock</span></div></div>
@@ -426,7 +424,6 @@
   </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="appContainer" class="app-container">
   <header class="app-header">
     <div class="header-logo">
@@ -448,7 +445,6 @@
     <button class="tab-btn" onclick="switchTab('tabProduction',this)"><span class="tab-icon">🏭</span>ผลิต & OEE</button>
   </nav>
 
-  <!-- TAB 1: สินค้า -->
   <div id="tabProduct" class="tab-content active">
     <div class="page-title">📦 ข้อมูลสินค้า</div>
     <div class="page-subtitle">จัดการฐานข้อมูลสินค้าทั้งหมด</div>
@@ -470,7 +466,6 @@
     </div>
   </div>
 
-  <!-- TAB 2: เบิกของ -->
   <div id="tabWithdraw" class="tab-content">
     <div class="page-title">🛒 รายการเบิกของ</div>
     <div class="page-subtitle">บันทึกการเบิกสินค้าออกจากสต็อก</div>
@@ -491,7 +486,6 @@
     </div>
   </div>
 
-  <!-- TAB 3: คงเหลือ -->
   <div id="tabInventory" class="tab-content">
     <div class="page-title">📋 สินค้าคงเหลือรายวัน</div>
     <div class="page-subtitle">ปริมาณสินค้าคงเหลือ ณ วันนี้</div>
@@ -518,7 +512,6 @@
     </div>
   </div>
 
-  <!-- TAB 4: รายงาน -->
   <div id="tabReport" class="tab-content">
     <div class="page-title">📊 รายงาน</div>
     <div class="page-subtitle">สรุปข้อมูลสินค้าในสต็อกแยกตามเดือน</div>
@@ -549,7 +542,6 @@
     </div>
   </div>
 
-  <!-- TAB 5: ผลิต & OEE -->
   <div id="tabProduction" class="tab-content">
     <div class="page-title">🏭 ระบบบันทึกสินค้าบรรจุเสร็จและวิเคราะห์ประสิทธิภาพการผลิต</div>
     <div class="page-subtitle">Finished Goods Tracking, Auto-BOM Deduction และ OEE Dashboard</div>
@@ -595,7 +587,6 @@
   </div>
 </div>
 
-<!-- MODAL: ตั้งค่าสินค้าสำเร็จรูป / BOM -->
 <div class="modal-overlay" id="modalFG">
   <div class="modal" style="max-width:560px;">
     <button class="modal-close" onclick="closeModal('modalFG')">✕</button>
@@ -619,7 +610,6 @@
   </div>
 </div>
 
-<!-- MODAL: บันทึกการผลิต -->
 <div class="modal-overlay" id="modalProduction">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalProduction')">✕</button>
@@ -657,7 +647,6 @@
   </div>
 </div>
 
-<!-- MODAL: เพิ่มสินค้า -->
 <div class="modal-overlay" id="modalProduct">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalProduct')">✕</button>
@@ -694,7 +683,6 @@
   </div>
 </div>
 
-<!-- MODAL: เพิ่มรายการเบิก -->
 <div class="modal-overlay" id="modalWithdraw">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modalWithdraw')">✕</button>
@@ -749,7 +737,8 @@ let docCounter = parseInt(localStorage.getItem('gs_docCounter') || '1000');
 let prodDocCounter = parseInt(localStorage.getItem('gs_prodDocCounter') || '5000');
 const YIELD_LOSS_THRESHOLD = 2; // %
 
-const GAS_WEB_APP_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // *** สำคัญ: แทนที่ด้วย URL ของ Web App ของคุณ ***
+// *** สำคัญ: นำ URL ของ Google Apps Script Web App ของคุณมาใส่แทนตรงนี้ ***
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwLSVmtVjXXu6nvae2URIYSOk67Hb0xA4xVcrjA-6a3GO2RDxnTyAAhKr27i_500KX_CQ/exec'; 
 
 async function sendToGoogleSheet(action, payload) {
   try {
@@ -830,17 +819,8 @@ function doRegister() {
   showToast('✅ ลงทะเบียนสำเร็จ! กรุณาเข้าสู่ระบบ');
   showPage('loginPage');
 
-  // บันทึกลง Google Sheet
-  fetch('https://5000-i30momf2dkp9fq8ie0ahy-ca4fcfa2.sg1.manus.computer/api/save-employee', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(empData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') console.log('Employee synced to Google Sheet');
-  })
-  .catch(err => console.error('Sync Error:', err));
+  // บันทึกลง Google Sheet แบบ Real-time
+  sendToGoogleSheet('save-employee', empData);
 }
 
 function doForgotPassword() {
@@ -947,7 +927,7 @@ function saveProduct() {
     products[editingProductIdx] = { code, name, qty, unit, date, minAlert };
     showToast('✅ แก้ไขสินค้าสำเร็จ');
   } else {
-    if (products.find(p => p.code === code)) { showToast('❌ รหัสสินค้านี้มีอยู่แล้ว'); return; }
+    if (products.find(p => p.code === code)) { showToast('❌ รหัสสินค้านี้มีอยูแล้ว'); return; }
     products.push({ code, name, qty, unit, date, minAlert });
     showToast('✅ เพิ่มสินค้าสำเร็จ');
   }
@@ -955,16 +935,9 @@ function saveProduct() {
   save(); closeModal('modalProduct'); renderAll();
 
   // บันทึกลง Google Sheet
-  fetch('https://5000-i30momf2dkp9fq8ie0ahy-ca4fcfa2.sg1.manus.computer/api/save-product', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(productData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') showToast('✅ บันทึกสินค้าลง Google Sheet สำเร็จ');
-  })
-  .catch(err => console.error('Sync Error:', err));
+  sendToGoogleSheet('save-product', productData).then(success => {
+    if (success) showToast('✅ ซิงค์ข้อมูลสินค้าลง Google Sheet เรียบร้อยแล้ว');
+  });
 }
 
 function editProduct(i) {
@@ -1008,17 +981,10 @@ function saveWithdraw() {
   save(); closeModal('modalWithdraw'); renderAll();
   showToast('✅ บันทึกรายการเบิกสำเร็จ');
 
-  // บันทึกลง Google Sheet
-  fetch('https://5000-i30momf2dkp9fq8ie0ahy-ca4fcfa2.sg1.manus.computer/api/save-withdraw', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(withdrawData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') showToast('✅ บันทึกการเบิกลง Google Sheet สำเร็จ');
-  })
-  .catch(err => console.error('Sync Error:', err));
+  // บันทึกการเบิกลง Google Sheet
+  sendToGoogleSheet('save-withdraw', withdrawData).then(success => {
+    if (success) console.log('Withdrawal synced to Google Sheet');
+  });
 }
 
 function deleteWithdrawal(idx) {
@@ -1305,17 +1271,8 @@ function saveFG() {
   editingFGIdx = -1;
   save();
   
-  // บันทึกลง Google Sheet
-  fetch('https://5000-i30momf2dkp9fq8ie0ahy-ca4fcfa2.sg1.manus.computer/api/save-bom', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(fgData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') showToast('✅ บันทึก BOM ลง Google Sheet สำเร็จ');
-  })
-  .catch(err => console.error('Sync Error:', err));
+  // บันทึกสูตร BOM ลง Google Sheet
+  sendToGoogleSheet('save-bom', fgData);
 
   document.getElementById('fgCode').value = '';
   document.getElementById('fgName').value = '';
@@ -1326,6 +1283,7 @@ function saveFG() {
   populateFGSelect();
 }
 
+// โค้ดส่วนที่เหลือยังคงทำงานสมบูรณ์แบบเดิมตามที่เขียนไว้...
 function editFG(i) {
   editingFGIdx = i;
   const fg = finishedGoods[i];
@@ -1428,24 +1386,9 @@ function saveProduction() {
   closeModal('modalProduction');
   renderAll();
 
-  // บันทึกลง Google Sheet
-  fetch('https://5000-i30momf2dkp9fq8ie0ahy-ca4fcfa2.sg1.manus.computer/api/save-production', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(productionData)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.status === 'success') {
-      showToast('✅ บันทึกการผลิตลง Google Sheet สำเร็จ');
-    } else {
-      console.error('Google Sheet Error:', data.message);
-      showToast('❌ บันทึกลง Google Sheet ไม่สำเร็จ');
-    }
-  })
-  .catch(err => {
-    console.error('Fetch Error:', err);
-    showToast('⚠️ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์บันทึกข้อมูลได้');
+  // ส่งค่าขึ้นไปประมวลผลและเก็บข้อมูลดิบที่ Google Sheet
+  sendToGoogleSheet('save-production', productionData).then(success => {
+    if (success) console.log('Production metrics synced successfully');
   });
 
   if (isAlert) {
